@@ -2,6 +2,7 @@ package com.kskkbys.unitygcmplugin;
 
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,27 +58,54 @@ public class UnityGCMIntentService extends GCMBaseIntentService {
 		}
 		
 		// Show native notification view in status bar if defined fields are put.
-		String contentTitle;
-		try {
-			contentTitle = json.getString("content_title");
-			String contentText;
-			try {
-				contentText = json.getString("content_text");
-			} catch (JSONException e) {
-				contentText = "";
-			}
-			String ticker;
-			try {
-				ticker = json.getString("ticker");
-			} catch (JSONException e) {
-				ticker = contentTitle; // If no ticker specified, use title
-			}
-			UnityGCMNotificationManager.showNotification(this, contentTitle, contentText, ticker);
-		} catch (JSONException e) {
-			// Title is mandatory, do not display in status bar
-			Log.v(TAG, "No content_title specified, not showing anything in Android status bar");
-		}
+        try {
+            String aps = intent.getStringExtra("aps");
+            Log.d(TAG, "APS string: " + aps);
+            if (aps != null) {
+                JSONObject obj = new JSONObject(aps);
+                Log.d(TAG, "JSON: " + obj);
+
+                //processing alert
+                if (obj.has("alert")) {
+                    processAlert(obj.getJSONObject("alert"), context);
+                    Log.d(TAG, "alert processed");
+                }
+            }
+
+        } catch (Exception e) {
+            Log.w(TAG, "onMessage failure. " + e);
+        }
 	}
+    
+    protected void processAlert(JSONObject alert, Context context) throws JSONException {
+
+        if (alert.isNull("loc-key")) {
+            Log.d(TAG, "loc-key is null!");
+            return;
+        }
+
+        String locKey = alert.getString("loc-key");
+        String message;
+
+        int locKeyId = context.getResources().getIdentifier(locKey, "string", context.getPackageName());
+
+        Log.d(TAG, "loc-key resource id = " + locKeyId);
+        if (alert.has("loc-args")) {
+            JSONArray locArgs = alert.getJSONArray("loc-args");
+            int size = locArgs.length();
+
+            Object[] args = new Object[size];
+            for (int i = 0; i < size; ++i) {
+                args[i] = locArgs.get(i);
+            }
+
+            message = (locKeyId != 0) ? context.getString(locKeyId, args) : String.format(locKey, args);
+        } else {
+            message = (locKeyId != 0) ? context.getString(locKeyId) : locKey;
+        }
+
+        UnityGCMNotificationManager.showNotification(this, message);
+    }
 
 	@Override
 	protected void onRegistered(Context context, String registrationId) {

@@ -34,26 +34,28 @@ public class UnityGCMNotificationManager {
 	 * @param contentText
 	 * @param ticker
 	 */
-	public static void showNotification(Context context, String contentTitle, String contentText, String ticker) {
+	public static void showNotification(Context context, String contentText) {
 		Log.v(TAG, "showNotification");
 		
 		// Intent 
 		Intent intent = new Intent(context, UnityPlayerProxyActivity.class);
 		PendingIntent contentIntent = PendingIntent.getActivity(context, REQUEST_CODE_UNITY_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		
+
+        int titleResourceId = context.getResources().getIdentifier("notificationTitle", "string", context.getPackageName());
+        String contentTitle = titleResourceId != 0 ? context.getString(titleResourceId) : "";
+
 		//　Show notification in status bar
 		NotificationCompat.Builder builder = new NotificationCompat.Builder(context.getApplicationContext());
 		builder.setContentIntent(contentIntent);
-		builder.setTicker(ticker);
+        builder.setContentTitle(contentTitle);
 		builder.setContentText(contentText);
-		builder.setContentTitle(contentTitle);
 		builder.setWhen(System.currentTimeMillis());
 		builder.setAutoCancel(true);
 		
 		Resources res = context.getResources();
 		builder.setSmallIcon(res.getIdentifier("app_icon", "drawable", context.getPackageName()));
 		
-		builder.setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS);
+		builder.setDefaults(Notification.DEFAULT_SOUND);
 		
 		NotificationManager nm = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 		nm.notify(ID_NOTIFICATION, builder.build());
