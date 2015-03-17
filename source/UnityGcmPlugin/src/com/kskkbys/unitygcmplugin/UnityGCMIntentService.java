@@ -1,63 +1,81 @@
 package com.kskkbys.unitygcmplugin;
 
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import com.google.android.gcm.GCMBaseIntentService;
+import java.util.Set;
 
 /**
  * GCMIntentService.<br>
  * For each callback, this class sends message to GameObject via UnitySendMessage.
- * @author Keisuke Kobayashi
  *
+ * @author Keisuke Kobayashi
  */
-public class UnityGCMIntentService extends GCMBaseIntentService {
+public class UnityGCMIntentService extends IntentService {
 
-	private static final String TAG = UnityGCMIntentService.class.getSimpleName();
+    private static final String TAG = UnityGCMIntentService.class.getSimpleName();
 
-	private static final String ON_ERROR = "OnError";
-	private static final String ON_MESSAGE = "OnMessage";
-	private static final String ON_REGISTERED = "OnRegistered";
-	private static final String ON_UNREGISTERED = "OnUnregistered";
-	
-	private static final String ON_DELETE_MESSAGES = "OnDeleteMessages";
+    public static final String ON_ERROR = "OnError";
+    public static final String ON_MESSAGE = "OnMessage";
+    public static final String ON_REGISTERED = "OnRegistered";
+    public static final String ON_UNREGISTERED = "OnUnregistered";
+    public static final String ON_DELETE_MESSAGES = "OnDeleteMessages";
 
-	@Override
-	protected void onError(Context context, String errorId) {
-		Log.v(TAG, "onError");
-		Util.sendMessage(ON_ERROR, errorId);
-	}
+    public UnityGCMIntentService(String name) {
+        super(name);
+    }
 
-	@Override
-	protected void onMessage(Context context, Intent intent) {
-		Log.v(TAG, "onMessage");
-		// Notify to C# layer
-		Bundle bundle = intent.getExtras();
-		Set<String> keys = bundle.keySet();
-		JSONObject json = new JSONObject();
-		try {
-			for (String key : keys) {
-				Log.v(TAG, key + ": " + bundle.get(key));
-				json.put(key, bundle.get(key));
-			}
-			Util.sendMessage(ON_MESSAGE, json.toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		
-		if (!Util.notificationsEnabled) {
-			return;
-		}
-		
-		// Show native notification view in status bar if defined fields are put.
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        Bundle extras = intent.getExtras();
+        GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
+        String messageType = gcm.getMessageType(intent);
+
+        if (!extras.isEmpty()) { // has effect of unparcelling Bundle
+            if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
+                onError(this, extras.toString());
+            } else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
+                onDeletedMessages(this, extras.toString());
+            } else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)) {
+                onMessage(this, intent);
+            }
+        }
+        UnityGCMBroadcastReceiver.completeWakefulIntent(intent);
+    }
+
+    protected void onError(Context context, String errorId) {
+        Log.v(TAG, "onError");
+        Util.sendMessage(ON_ERROR, errorId);
+    }
+
+    protected void onMessage(Context context, Intent intent) {
+        Log.v(TAG, "onMessage");
+        // Notify to C# layer
+        Bundle bundle = intent.getExtras();
+        Set<String> keys = bundle.keySet();
+        JSONObject json = new JSONObject();
+        try {
+            for (String key : keys) {
+                Log.v(TAG, key + ": " + bundle.get(key));
+                json.put(key, bundle.get(key));
+            }
+            Util.sendMessage(ON_MESSAGE, json.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (!Util.notificationsEnabled) {
+            return;
+        }
+
+        // Show native notification view in status bar if defined fields are put.
         try {
             String aps = intent.getStringExtra("aps");
             Log.d(TAG, "APS string: " + aps);
@@ -75,8 +93,8 @@ public class UnityGCMIntentService extends GCMBaseIntentService {
         } catch (Exception e) {
             Log.w(TAG, "onMessage failure. " + e);
         }
-	}
-    
+    }
+
     protected void processAlert(JSONObject alert, Context context) throws JSONException {
 
         if (alert.isNull("loc-key")) {
@@ -107,22 +125,19 @@ public class UnityGCMIntentService extends GCMBaseIntentService {
         UnityGCMNotificationManager.showNotification(this, message);
     }
 
-	@Override
-	protected void onRegistered(Context context, String registrationId) {
-		Log.v(TAG, "onRegistered");
-		Util.sendMessage(ON_REGISTERED, registrationId);
-	}
+    protected void onRegistered(Context context, String registrationId) {
+        Log.v(TAG, "onRegistered");
+        Util.sendMessage(ON_REGISTERED, registrationId);
+    }
 
-	@Override
-	protected void onUnregistered(Context context, String registrationId) {
-		Log.v(TAG, "onUnregistered");
-		Util.sendMessage(ON_UNREGISTERED, registrationId);
-	}
-	
-	@Override
-	protected void onDeletedMessages (Context context, int total) {
-		Log.v(TAG, "onDeleteMessages");
-		Util.sendMessage(ON_DELETE_MESSAGES, Integer.toString(total));
-	}
+    protected void onUnregistered(Context context, String registrationId) {
+        Log.v(TAG, "onUnregistered");
+        Util.sendMessage(ON_UNREGISTERED, registrationId);
+    }
+
+    protected void onDeletedMessages(Context context, String total) {
+        Log.v(TAG, "onDeleteMessages");
+        Util.sendMessage(ON_DELETE_MESSAGES, total);
+    }
 
 }

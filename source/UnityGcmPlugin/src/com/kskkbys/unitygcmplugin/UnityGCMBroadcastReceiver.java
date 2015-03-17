@@ -1,27 +1,28 @@
 package com.kskkbys.unitygcmplugin;
 
+import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
-import android.util.Log;
-
-import com.google.android.gcm.GCMBroadcastReceiver;
+import android.content.Intent;
+import android.support.v4.content.WakefulBroadcastReceiver;
 
 /**
- * Overrides GCMBroadcastReceiver to fix the class name of GCMIntentService
- * @author Keisuke Kobayashi
- *
+ * This {@code WakefulBroadcastReceiver} takes care of creating and managing a
+ * partial wake lock for your app. It passes off the work of processing the GCM
+ * message to an {@code IntentService}, while ensuring that the device does not
+ * go back to sleep in the transition. The {@code IntentService} calls
+ * {@code GcmBroadcastReceiver.completeWakefulIntent()} when it is ready to
+ * release the wake lock.
  */
-public class UnityGCMBroadcastReceiver extends GCMBroadcastReceiver {
 
-	private static final String TAG = UnityGCMBroadcastReceiver.class.getSimpleName();
-	
-	private static final String SERVICE_NAME = "com.kskkbys.unitygcmplugin.UnityGCMIntentService";
-	
-	/**
-	 * Get the fixed name of subclass of GCMBaseIntentService
-	 */
-	@Override
-	protected String getGCMIntentServiceClassName(Context context) {
-		Log.v(TAG, "getGCMIntentServcieClassName");
-		return SERVICE_NAME;
-	}
+public class UnityGCMBroadcastReceiver extends WakefulBroadcastReceiver {
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        // Explicitly specify that GcmIntentService will handle the intent.
+        ComponentName comp = new ComponentName(context.getPackageName(), UnityGCMIntentService.class.getName());
+        // Start the service, keeping the device awake while it is launching.
+        startWakefulService(context, (intent.setComponent(comp)));
+        setResultCode(Activity.RESULT_OK);
+    }
 }

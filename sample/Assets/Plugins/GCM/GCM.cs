@@ -90,67 +90,7 @@ public class GCM {
 	}
 	
 	/// <summary>
-	/// Sets the registered on server.
-	/// </summary>
-	/// <param name='isRegistered'>
-	/// Is registered.
-	/// </param>
-	public static void SetRegisteredOnServer (bool isRegistered) {
-		if (Application.platform == RuntimePlatform.Android) {
-			using (AndroidJavaClass cls = new AndroidJavaClass (CLASS_NAME)) {
-				cls.CallStatic ("setRegisteredOnServer", isRegistered);
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Determines whether this instance is registered on server.
-	/// </summary>
-	/// <returns>
-	/// <c>true</c> if this instance is registered on server; otherwise, <c>false</c>.
-	/// </returns>
-	public static bool IsRegisteredOnServer () {
-		if (Application.platform == RuntimePlatform.Android) {
-			using (AndroidJavaClass cls = new AndroidJavaClass (CLASS_NAME)) {
-				return cls.CallStatic<bool> ("isRegisteredOnServer");
-			}
-		} else {
-			return false;
-		}
-	}
-	
-	/// <summary>
-	/// Sets the register on server lifespan.
-	/// </summary>
-	/// <param name='lifespan'>
-	/// Lifespan.
-	/// </param>
-	public static void SetRegisterOnServerLifespan (long lifespan) {
-		if (Application.platform == RuntimePlatform.Android) {
-			using (AndroidJavaClass cls = new AndroidJavaClass (CLASS_NAME)) {
-				cls.CallStatic ("setRegisterOnServerLifespan", lifespan);
-			}
-		}
-	}
-	
-	/// <summary>
-	/// Gets the register on server lifespan.
-	/// </summary>
-	/// <returns>
-	/// The register on server lifespan.
-	/// </returns>
-	public static long GetRegisterOnServerLifespan () {
-		if (Application.platform == RuntimePlatform.Android) {
-			using (AndroidJavaClass cls = new AndroidJavaClass (CLASS_NAME)) {
-				return cls.CallStatic<long> ("getRegisterOnServerLifespan");
-			}
-		} else {
-			return 0L;
-		}
-	}
-	
-    /// <summary>
- 	/// Clear all status bar notifications
+	/// Clear all status bar notifications
 	/// </summary>
  public static void ClearAllNotifications () {
      if (Application.platform == RuntimePlatform.Android) {
