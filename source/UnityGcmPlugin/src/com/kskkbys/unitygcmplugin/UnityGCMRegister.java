@@ -25,7 +25,6 @@ public class UnityGCMRegister {
     private static final String TAG = UnityGCMRegister.class.getSimpleName();
 
     private static String gcmId = "";
-    private static Context context = null;
 
     public static boolean checkPlayServices(Context context) {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
@@ -74,6 +73,8 @@ public class UnityGCMRegister {
         @Override
         protected String doInBackground(String... strings) {
             try {
+                Activity activity = UnityPlayer.currentActivity;
+                Context context = activity.getBaseContext();
                 if (checkPlayServices(context)) {
                     GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(context);
                     return gcm.register(strings);

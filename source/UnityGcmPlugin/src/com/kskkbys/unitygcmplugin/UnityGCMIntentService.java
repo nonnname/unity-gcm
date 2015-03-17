@@ -28,8 +28,8 @@ public class UnityGCMIntentService extends IntentService {
     public static final String ON_UNREGISTERED = "OnUnregistered";
     public static final String ON_DELETE_MESSAGES = "OnDeleteMessages";
 
-    public UnityGCMIntentService(String name) {
-        super(name);
+    public UnityGCMIntentService() {
+        super(UnityGCMIntentService.class.getCanonicalName());
     }
 
     @Override
