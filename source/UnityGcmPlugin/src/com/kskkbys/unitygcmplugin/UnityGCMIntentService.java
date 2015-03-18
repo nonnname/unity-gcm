@@ -25,7 +25,6 @@ public class UnityGCMIntentService extends IntentService {
     public static final String ON_ERROR = "OnError";
     public static final String ON_MESSAGE = "OnMessage";
     public static final String ON_REGISTERED = "OnRegistered";
-    public static final String ON_UNREGISTERED = "OnUnregistered";
     public static final String ON_DELETE_MESSAGES = "OnDeleteMessages";
 
     public UnityGCMIntentService() {
@@ -38,7 +37,8 @@ public class UnityGCMIntentService extends IntentService {
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         String messageType = gcm.getMessageType(intent);
 
-        if (!extras.isEmpty()) { // has effect of unparcelling Bundle
+        if (!extras.isEmpty()) {
+            // has effect of unparcelling Bundle
             if (GoogleCloudMessaging.MESSAGE_TYPE_SEND_ERROR.equals(messageType)) {
                 onError(this, extras.toString());
             } else if (GoogleCloudMessaging.MESSAGE_TYPE_DELETED.equals(messageType)) {
@@ -123,16 +123,6 @@ public class UnityGCMIntentService extends IntentService {
         }
 
         UnityGCMNotificationManager.showNotification(this, message);
-    }
-
-    protected void onRegistered(Context context, String registrationId) {
-        Log.v(TAG, "onRegistered");
-        Util.sendMessage(ON_REGISTERED, registrationId);
-    }
-
-    protected void onUnregistered(Context context, String registrationId) {
-        Log.v(TAG, "onUnregistered");
-        Util.sendMessage(ON_UNREGISTERED, registrationId);
     }
 
     protected void onDeletedMessages(Context context, String total) {

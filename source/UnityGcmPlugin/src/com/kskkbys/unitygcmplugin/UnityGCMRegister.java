@@ -1,5 +1,8 @@
 package com.kskkbys.unitygcmplugin;
 
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -23,8 +26,64 @@ import java.io.IOException;
 public class UnityGCMRegister {
 
     private static final String TAG = UnityGCMRegister.class.getSimpleName();
+    private static final String PREF_KEY = "UnityGCMRegister";
+    private static final String PROPERTY_REG_ID = "gcm_registration_id";
+    private static final String PROPERTY_APP_VERSION = "gcm_app_version";
 
-    private static String gcmId = "";
+    protected static String getCachedRegistrationId()
+    {
+        Context context = UnityPlayer.currentActivity.getBaseContext();
+        final SharedPreferences prefs = getGCMPreferences(context);
+        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+        if (registrationId.isEmpty()) {
+            Log.i(TAG, "Registration not found.");
+            return "";
+        }
+
+        // Check if app was updated; if so, it must clear the registration ID
+        // since the existing registration ID is not guaranteed to work with
+        // the new app version.
+        int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+        int currentVersion = getAppVersionCode(context);
+        if (registeredVersion != currentVersion) {
+            Log.i(TAG, "App version changed.");
+            return "";
+        }
+
+        return registrationId;
+    }
+
+    protected static void setCachedRegistrationId(String registrationId)
+    {
+        Context context = UnityPlayer.currentActivity.getBaseContext();
+        final SharedPreferences prefs = getGCMPreferences(context);
+        int appVersionCode = getAppVersionCode(context);
+
+        Log.i(TAG, "Saving regId on app version code " + appVersionCode);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(PROPERTY_REG_ID, registrationId);
+        editor.putInt(PROPERTY_APP_VERSION, appVersionCode);
+        editor.commit();
+
+        Util.sendMessage(UnityGCMIntentService.ON_REGISTERED, registrationId);
+    }
+
+    private static SharedPreferences getGCMPreferences(Context context) {
+        return context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
+    }
+
+    private static int getAppVersionCode(Context context)
+    {
+        int version = 0;
+        try {
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            version = pInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "NameNotFoundException", e);
+        }
+
+        return version;
+    }
 
     public static boolean checkPlayServices(Context context) {
         int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
@@ -32,36 +91,36 @@ public class UnityGCMRegister {
     }
 
     public static void register(final String senderIds) {
+        String cachedId = getCachedRegistrationId();
+        if (isRegistered()) {
+            Util.sendMessage(UnityGCMIntentService.ON_REGISTERED, cachedId);
+            return;
+        }
+
         if (TextUtils.isEmpty(senderIds)) {
             return;
         }
 
-        Activity activity = UnityPlayer.currentActivity;
         String[] senderIdArray = senderIds.split(",");
-        if (!"".equals(gcmId)) {
-            Util.sendMessage(UnityGCMIntentService.ON_REGISTERED, gcmId);
-        } else {
-            new UnityGCMAsyncRegister().execute(senderIdArray);
-        }
+        new UnityGCMAsyncRegister().execute(senderIdArray);
     }
 
     public static void unregister() {
-        Activity activity = UnityPlayer.currentActivity;
         try {
+            Activity activity = UnityPlayer.currentActivity;
             GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(activity.getBaseContext());
             if (gcm != null)
                 gcm.unregister();
+
+            setCachedRegistrationId("");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static boolean isRegistered() {
-        return !"".equals(gcmId);
-    }
-
-    public static String getRegistrationId() {
-        return gcmId;
+        String cachedRegId = getCachedRegistrationId();
+        return !cachedRegId.isEmpty();
     }
 
     public static void setNotificationsEnabled(boolean enabled) {
@@ -89,11 +148,11 @@ public class UnityGCMRegister {
 
         @Override
         protected void onPostExecute(String registrationId) {
-            if (!"".equals(registrationId)) {
-                gcmId = registrationId;
-                Util.sendMessage(UnityGCMIntentService.ON_REGISTERED, registrationId);
-            }else
-            Log.w(TAG, "UnityGCMAsyncRegister registrationId is empty");
+            if (!registrationId.isEmpty()) {
+                setCachedRegistrationId(registrationId);
+            } else {
+                Log.w(TAG, "UnityGCMAsyncRegister registrationId is empty");
+            }
         }
     }
 }
