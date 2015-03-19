@@ -3,32 +3,12 @@ unity-gcm
 
 ## About this repository
 
-This is an Unity plugin to use Google Cloud Messaging (GCM) for Android.
-By using this plugin, you can implement GCM without writing Java code.
+This is modified [kobakei/unity-gcm](https://github.com/kobakei/unity-gcm) Unity plugin to use Google Cloud Messaging (GCM) for Android.
 
-* Receive GCM events in C#/UnityScript/Boo layer
-* Show notification view in Android status bar
+### Key different
+* APNS alert format support!
+ * Your "server" can send messages for Apple Push Notifications Service (APNS) and GCM using one format for both [APSN Alert format](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html#//apple_ref/doc/uid/TP40008194-CH100-SW1)
+* [Removed gcm.jar](http://developer.android.com/google/gcm/client.html)
+* android:targetSdkVersion="17"
 
-## Installation
 
-Download .unitypackage file from [here](https://github.com/kskkbys/unity-gcm/blob/master/build/unity-gcm.unitypackage?raw=true)
-
-And import the file into your Unity project.
-
-## Developer Guide
-
-* https://github.com/kskkbys/unity-gcm/wiki/Developer-Guide
-
-## For contributors
-
-* https://github.com/kskkbys/unity-gcm/wiki/Contribute-this-project
-
-## Known Issues
-
-* https://github.com/kskkbys/unity-gcm/issues
-
-## Licenses
-
-Copyright 2013 Keisuke Kobayashi
-
-This software is licensed under Apache License 2.0
