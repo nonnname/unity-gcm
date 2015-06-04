@@ -148,7 +148,7 @@ public class UnityGCMRegister {
 
         @Override
         protected void onPostExecute(String registrationId) {
-            if (!registrationId.isEmpty()) {
+            if (registrationId != null && !registrationId.isEmpty()) {
                 setCachedRegistrationId(registrationId);
             } else {
                 Log.w(TAG, "UnityGCMAsyncRegister registrationId is empty");
