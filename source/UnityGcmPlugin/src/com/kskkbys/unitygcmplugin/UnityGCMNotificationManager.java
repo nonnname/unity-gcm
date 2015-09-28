@@ -51,7 +51,16 @@ public class UnityGCMNotificationManager {
         builder.setAutoCancel(true);
 
         Resources res = context.getResources();
-        builder.setSmallIcon(res.getIdentifier("app_icon", "drawable", context.getPackageName()));
+
+        boolean whiteIcon = (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP);
+        if (whiteIcon)
+        {
+            builder.setSmallIcon(res.getIdentifier("app_icon_silhouette", "drawable", context.getPackageName()));
+        }
+        else
+        {
+            builder.setSmallIcon(res.getIdentifier("app_icon", "drawable", context.getPackageName()));
+        }
 
         builder.setDefaults(Notification.DEFAULT_SOUND);
 
