@@ -61,12 +61,14 @@ public class UnityGCMIntentService extends IntentService {
         Bundle bundle = intent.getExtras();
         Set<String> keys = bundle.keySet();
         JSONObject json = new JSONObject();
+        String jsonMessage = null;
         try {
             for (String key : keys) {
                 Log.v(TAG, key + ": " + bundle.get(key));
                 json.put(key, bundle.get(key));
             }
-            Util.sendMessage(ON_MESSAGE, json.toString());
+            jsonMessage = json.toString();
+            Util.sendMessage(ON_MESSAGE, jsonMessage);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -85,7 +87,7 @@ public class UnityGCMIntentService extends IntentService {
 
                 //processing alert
                 if (obj.has("alert")) {
-                    processAlert(obj.getJSONObject("alert"), context);
+                    processAlert(obj.getJSONObject("alert"), context, jsonMessage);
                     Log.d(TAG, "alert processed");
                 }
             }
@@ -95,7 +97,7 @@ public class UnityGCMIntentService extends IntentService {
         }
     }
 
-    protected void processAlert(JSONObject alert, Context context) throws JSONException {
+    protected void processAlert(JSONObject alert, Context context, String extras) throws JSONException {
 
         if (alert.isNull("loc-key")) {
             Log.d(TAG, "loc-key is null!");
@@ -122,7 +124,7 @@ public class UnityGCMIntentService extends IntentService {
             message = (locKeyId != 0) ? context.getString(locKeyId) : locKey;
         }
 
-        UnityGCMNotificationManager.showNotification(this, message);
+        UnityGCMNotificationManager.showNotification(this, message, extras);
     }
 
     protected void onDeletedMessages(Context context, String total) {
