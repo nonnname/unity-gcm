@@ -35,13 +35,13 @@ public class UnityGCMNotificationManager {
      * @param context
      * @param contentText
      */
-    public static void showNotification(Context context, String contentText, String Extras) {
+    public static void showNotification(Context context, String contentText, String extras) {
         Log.v(TAG, "showNotification");
 
         // Intent
         Intent intent = new Intent(context, UnityPlayerActivity.class);
         intent.putExtra(INTENT_ID_NAME, INTENT_ID);
-        intent.putExtra(NOTIFICATION_MESSAGE, Extras);
+        intent.putExtra(NOTIFICATION_MESSAGE, extras);
         PendingIntent contentIntent = PendingIntent.getActivity(context, REQUEST_CODE_UNITY_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         int titleResourceId = context.getResources().getIdentifier("notificationTitle", "string", context.getPackageName());
