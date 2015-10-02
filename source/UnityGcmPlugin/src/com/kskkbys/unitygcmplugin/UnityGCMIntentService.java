@@ -97,7 +97,7 @@ public class UnityGCMIntentService extends IntentService {
         }
     }
 
-    protected void processAlert(JSONObject alert, Context context, String Extras) throws JSONException {
+    protected void processAlert(JSONObject alert, Context context, String extras) throws JSONException {
 
         if (alert.isNull("loc-key")) {
             Log.d(TAG, "loc-key is null!");
@@ -124,7 +124,7 @@ public class UnityGCMIntentService extends IntentService {
             message = (locKeyId != 0) ? context.getString(locKeyId) : locKey;
         }
 
-        UnityGCMNotificationManager.showNotification(this, message, Extras);
+        UnityGCMNotificationManager.showNotification(this, message, extras);
     }
 
     protected void onDeletedMessages(Context context, String total) {

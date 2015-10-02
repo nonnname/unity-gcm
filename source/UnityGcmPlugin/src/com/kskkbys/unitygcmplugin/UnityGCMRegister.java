@@ -128,9 +128,9 @@ public class UnityGCMRegister {
         Util.notificationsEnabled = enabled;
     }
 
-    public static boolean appicationWasStartedFromNotification()
+    public static boolean hasDelayedNotifications()
     {
-        Log.v(TAG, "checkIfApplicationWasStartedFromNotification");
+        Log.v(TAG, "hasDelayedNotifications");
 
         if(UnityPlayer.currentActivity == null)
         {
@@ -151,8 +151,8 @@ public class UnityGCMRegister {
         return false;
     }
 
-    public static void resendIntentExtras() {
-        Log.v(TAG, "resendIntentExtras");
+    public static void processDelayedNotifications() {
+        Log.v(TAG, "processDelayedNotifications");
 
         if(UnityPlayer.currentActivity == null)
         {
