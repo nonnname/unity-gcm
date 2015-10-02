@@ -128,6 +128,53 @@ public class UnityGCMRegister {
         Util.notificationsEnabled = enabled;
     }
 
+    public static boolean appicationWasStartedFromNotification()
+    {
+        Log.v(TAG, "checkIfApplicationWasStartedFromNotification");
+
+        if(UnityPlayer.currentActivity == null)
+        {
+            Log.v(TAG, "UnityPlayer.currentActivity == null");
+            return false;
+        }
+
+        android.content.Intent intent = UnityPlayer.currentActivity.getIntent();
+
+        if(intent != null){
+            int intentID = intent.getIntExtra(UnityGCMNotificationManager.INTENT_ID_NAME, -1);
+            if(intentID == UnityGCMNotificationManager.INTENT_ID)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static void resendIntentExtras() {
+        Log.v(TAG, "resendIntentExtras");
+
+        if(UnityPlayer.currentActivity == null)
+        {
+            Log.v(TAG, "UnityPlayer.currentActivity == null");
+            return;
+        }
+
+        android.content.Intent intent = UnityPlayer.currentActivity.getIntent();
+
+        if(intent != null)
+        {
+            String notifMessage = intent.getStringExtra(UnityGCMNotificationManager.NOTIFICATION_MESSAGE);
+            if(notifMessage != null)
+            {
+                Util.sendMessage(UnityGCMIntentService.ON_MESSAGE, notifMessage);
+                Log.d(TAG, "Sending JSON: " + notifMessage);
+            }
+        }
+
+    }
+
+
     private static class UnityGCMAsyncRegister extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... strings) {

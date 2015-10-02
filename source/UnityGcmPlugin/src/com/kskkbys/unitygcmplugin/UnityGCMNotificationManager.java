@@ -1,7 +1,7 @@
 package com.kskkbys.unitygcmplugin;
 
 import com.unity3d.player.UnityPlayer;
-import com.unity3d.player.UnityPlayerProxyActivity;
+import com.unity3d.player.UnityPlayerActivity;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -25,6 +25,9 @@ public class UnityGCMNotificationManager {
     private static final int REQUEST_CODE_UNITY_ACTIVITY = 1001;
     // ID of notification
     private static final int ID_NOTIFICATION = 1;
+    public static final int INTENT_ID = 101;
+    public static final String INTENT_ID_NAME = "uniqueID";
+    public static final String NOTIFICATION_MESSAGE = "notifMessage";
 
     /**
      * Show notification view in status bar
@@ -32,11 +35,13 @@ public class UnityGCMNotificationManager {
      * @param context
      * @param contentText
      */
-    public static void showNotification(Context context, String contentText) {
+    public static void showNotification(Context context, String contentText, String Extras) {
         Log.v(TAG, "showNotification");
 
         // Intent
-        Intent intent = new Intent(context, UnityPlayerProxyActivity.class);
+        Intent intent = new Intent(context, UnityPlayerActivity.class);
+        intent.putExtra(INTENT_ID_NAME, INTENT_ID);
+        intent.putExtra(NOTIFICATION_MESSAGE, Extras);
         PendingIntent contentIntent = PendingIntent.getActivity(context, REQUEST_CODE_UNITY_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         int titleResourceId = context.getResources().getIdentifier("notificationTitle", "string", context.getPackageName());
