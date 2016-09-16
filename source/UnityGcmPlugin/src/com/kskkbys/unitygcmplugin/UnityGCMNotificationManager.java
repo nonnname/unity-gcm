@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -38,10 +39,14 @@ public class UnityGCMNotificationManager {
     public static void showNotification(Context context, String contentText, String extras) {
         Log.v(TAG, "showNotification");
 
+        PackageManager pm = context.getPackageManager();
+        Intent intent = pm.getLaunchIntentForPackage(context.getPackageName());
+
         // Intent
-        Intent intent = new Intent(context, UnityPlayerActivity.class);
         intent.putExtra(INTENT_ID_NAME, INTENT_ID);
         intent.putExtra(NOTIFICATION_MESSAGE, extras);
+        intent.setFlags(intent.getFlags() | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
         PendingIntent contentIntent = PendingIntent.getActivity(context, REQUEST_CODE_UNITY_ACTIVITY, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         int titleResourceId = context.getResources().getIdentifier("notificationTitle", "string", context.getPackageName());
